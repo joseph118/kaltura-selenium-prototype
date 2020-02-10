@@ -19,15 +19,15 @@ describe('Simple kaltura test using core files', () => {
 
     beforeEach(async () => {
         // Not required but getting fresh data from the player with every test.
-        await kalturaPlayer.generateData();
+        await kalturaPlayer.triggerPlayerSnapshot();
     });
 
     it('should auto play', async () => {
-        expect(kalturaPlayer.getPlayerData().isPlaying).to.be.true;
+        expect(kalturaPlayer.getSnapshot().isPlaying).to.be.true;
     });
 
     it('should play with audio', async () => {
-        expect(kalturaPlayer.getPlayerData().volume).to.be.greaterThan(0);
+        expect(kalturaPlayer.getSnapshot().volume).to.be.greaterThan(0);
     });
 
     // afterEach();

@@ -1,13 +1,38 @@
 const { By, until } = require('selenium-webdriver');
 
 /**
- * Generates a query string for selenium script execution.
- * @param action {string} The function name available by the custom element.
- * @returns {}
+ * @typedef {Object} PlayerDimension
+ * @property width {number}  The player width.
+ * @property height {number} The player height.
  */
-function generatePlayerQueryString(action) {
-    return `return document.querySelector('.mwEmbedPlayer').${action};`;
-}
+
+/**
+ * @typedef {Object} PlayerFlashvars
+ */
+
+/**
+ * @typedef {Object} PlayerSnapshot
+ * @property flashvars {PlayerFlashvars} The player flashvars.
+ * @property isMuted {boolean} If the player is muted.
+ * @property isPlaying {boolean} If the player is playing.
+ * @property isStopped {boolean} If the player is stopped.
+ * @property duration {number} The duration of the player.
+ * @property isAudio {boolean} If the player is playing audio file.
+ * @property canAutoPlay {boolean} If the player can auto play.
+ * @property useNativePlayerControls {boolean} If the player is using native player controls.
+ * @property isDVR {boolean} If the player is DVR.
+ * @property isPersistentNativePlayer {boolean} If the player is persistent native player.
+ * @property isOverlayControls {boolean} If the controls are overlaying.
+ * @property isMobileSkin {boolean} If the player skin is for mobile.
+ * @property volume {number} The player volume.
+ * @property isLive {boolean} If the player is live.
+ * @property is360 {boolean} If the player is 360.
+ * @property isDrmRequired {boolean} If DRM is required.
+ * @property isLiveOffSynch {boolean} If is live off sync.
+ * @property currentBitrate {number} The current bitrate.
+ * @property dimensions {PlayerDimension} The player dimensions.
+ */
+
 
 /**
  * Opens the web page, and sets up the driver on the Kaltura iFrame. This also waits until
@@ -34,9 +59,14 @@ class KalturaPlayer {
      * @param webDriver {!ThenableWebDriver} A WebDriver instance.
      */
     constructor(webDriver) {
-        this.webDriver = webDriver;
-        this.flashvars = null;
-        this.playerData = null;
+        this._webDriver = webDriver;
+
+        /**
+         * A snapshot of data coming from mwEmbedPlayer
+         * @type {PlayerSnapshot}
+         * @private
+         */
+        this._snapshot = null;
     }
 
     /**
@@ -50,124 +80,57 @@ class KalturaPlayer {
 
         const kalturaPlayer = new KalturaPlayer(webDriver);
 
-        await kalturaPlayer.generateData();
+        await kalturaPlayer.triggerPlayerSnapshot();
 
         return kalturaPlayer;
     }
 
-    getPlayerData() {
-        return this.playerData;
+    /**
+     * Returns the last player snapshot.
+     * @returns {PlayerSnapshot}
+     */
+    getSnapshot() {
+        return this._snapshot;
     }
 
-    getFlashVars() {
-        return this.flashvars;
+    /**
+     * Gets a snapshot of data from mwEmbedPlayer, stores it, and returns the value.
+     * @returns {Promise<PlayerSnapshot>}
+     */
+    async triggerPlayerSnapshot() {
+        const snapshot = await this._getDataFromEmbedPlayer();
+
+        this._snapshot = snapshot;
+
+        return snapshot;
     }
 
-    async generateData() {
-        const [
-            flashvars,
-            playerData
-        ] = await Promise.all([
-            this._getFlashVars(),
-            this._getPlayerData()
-        ]);
-
-        this.flashvars = flashvars;
-        this.playerData = playerData;
-    }
-
-    async _getFlashVars() {
-        return this.webDriver.executeScript(generatePlayerQueryString(`getFlashvars()`));
-    }
-
-    async _getPlayerData() {
-        const isMutedPromise = this.webDriver.executeScript(generatePlayerQueryString(`getPlayerElementMuted()`));
-        const isPlayingPromise = this.webDriver.executeScript(generatePlayerQueryString(`isPlaying()`));
-        const isStoppedPromise = this.webDriver.executeScript(generatePlayerQueryString(`isStopped()`));
-        const durationPromise = this.webDriver.executeScript(generatePlayerQueryString(`getDuration()`));
-        const playerHeightPromise = this.webDriver.executeScript(generatePlayerQueryString(`getHeight()`));
-        const playerWidthPromise = this.webDriver.executeScript(generatePlayerQueryString(`getWidth()`));
-        const isAudioPromise = this.webDriver.executeScript(generatePlayerQueryString(`isAudio()`));
-        const canAutoPlayPromise = this.webDriver.executeScript(generatePlayerQueryString(`canAutoPlay()`));
-        const useNativePlayerControlsPromise = this.webDriver.executeScript(generatePlayerQueryString(`useNativePlayerControls()`));
-        const isDVRPromise = this.webDriver.executeScript(generatePlayerQueryString(`isDVR()`));
-        const isPersistentNativePlayerPromise = this.webDriver.executeScript(generatePlayerQueryString(`isPersistentNativePlayer()`));
-        const isOverlayControlsPromise = this.webDriver.executeScript(generatePlayerQueryString(`isOverlayControls()`));
-        const isMobileSkinPromise = this.webDriver.executeScript(generatePlayerQueryString(`isMobileSkin()`));
-        const playerVolumePromise = this.webDriver.executeScript(generatePlayerQueryString(`getPlayerElementVolume()`));
-        const isLivePromise = this.webDriver.executeScript(generatePlayerQueryString(`isLive()`));
-        const is360Promise = this.webDriver.executeScript(generatePlayerQueryString(`is360()`));
-        const isDrmRequiredPromise = this.webDriver.executeScript(generatePlayerQueryString(`isDrmRequired()`));
-        const isLiveOffSynchPromise = this.webDriver.executeScript(generatePlayerQueryString(`isLiveOffSynch()`));
-        const currentBitratePromise = this.webDriver.executeScript(generatePlayerQueryString(`getCurrentBitrate()`));
-
-        const [
-            isMuted,
-            isPlaying,
-            isStopped,
-            duration,
-            playerHeight,
-            playerWidth,
-            isAudio,
-            canAutoPlay,
-            useNativePlayerControls,
-            isDVR,
-            isPersistentNativePlayer,
-            isOverlayControls,
-            isMobileSkin,
-            playerVolume,
-            isLive,
-            is360,
-            isDrmRequired,
-            isLiveOffSynch,
-            currentBitrate
-        ] = await Promise.all([
-            isMutedPromise,
-            isPlayingPromise,
-            isStoppedPromise,
-            durationPromise,
-            playerHeightPromise,
-            playerWidthPromise,
-            isAudioPromise,
-            canAutoPlayPromise,
-            useNativePlayerControlsPromise,
-            isDVRPromise,
-            isPersistentNativePlayerPromise,
-            isOverlayControlsPromise,
-            isMobileSkinPromise,
-            playerVolumePromise,
-            isLivePromise,
-            is360Promise,
-            isDrmRequiredPromise,
-            isLiveOffSynchPromise,
-            currentBitratePromise
-        ]);
-
-        return {
+    async _getDataFromEmbedPlayer() {
+        const className = '.mwEmbedPlayer';
+        return this._webDriver.executeScript(`return {
+            flashvars: document.querySelector('${className}').getFlashvars(),
+            isMuted: document.querySelector('${className}').getPlayerElementMuted(),
+            isPlaying: document.querySelector('${className}').isPlaying(),
+            isStopped: document.querySelector('${className}').isStopped(),
+            duration: document.querySelector('${className}').getDuration(),
+            isAudio: document.querySelector('${className}').isAudio(),
+            canAutoPlay: document.querySelector('${className}').canAutoPlay(),
+            useNativePlayerControls: document.querySelector('${className}').useNativePlayerControls(),
+            isDVR: document.querySelector('${className}').isDVR(),
+            isPersistentNativePlayer: document.querySelector('${className}').isPersistentNativePlayer(),
+            isOverlayControls: document.querySelector('${className}').isOverlayControls(),
+            isMobileSkin: document.querySelector('${className}').isMobileSkin(),
+            volume: document.querySelector('${className}').getPlayerElementVolume(),
+            isLive: document.querySelector('${className}').isLive(),
+            is360: document.querySelector('${className}').is360(),
+            isDrmRequired: document.querySelector('${className}').isDrmRequired(),
+            isLiveOffSynch: document.querySelector('${className}').isLiveOffSynch(),
+            currentBitrate: document.querySelector('${className}').getCurrentBitrate(),
             dimensions: {
-                width: playerWidth,
-                height: playerHeight
-            },
-
-            volume: playerVolume,
-
-            isAudio,
-            isMuted,
-            isPlaying,
-            isStopped,
-            duration,
-            canAutoPlay,
-            useNativePlayerControls,
-            isDVR,
-            isPersistentNativePlayer,
-            isOverlayControls,
-            isMobileSkin,
-            isLive,
-            is360,
-            isDrmRequired,
-            isLiveOffSynch,
-            currentBitrate
-        }
+                width: document.querySelector('${className}').getWidth(),
+                height: document.querySelector('${className}').getHeight()            
+            }
+        };`);
     }
 }
 
