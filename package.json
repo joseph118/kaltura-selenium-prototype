@@ -9,7 +9,8 @@
   "keywords": [
     "selenium",
     "chai",
-    "mocha"
+    "mocha",
+    "kaltura"
   ],
   "author": "Joseph Borg",
   "license": "ISC",
