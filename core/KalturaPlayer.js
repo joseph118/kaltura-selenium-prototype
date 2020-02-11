@@ -54,6 +54,36 @@ async function setupDriverOnPlayerFrame(url, webDriver) {
     await webDriver.sleep(1000); // Add another second on top
 }
 
+/**
+ * A script executed to retrieve player data from the DOM.
+*/
+const getDataFromEmbedPlayer = `
+    var player = document.querySelector('.mwEmbedPlayer');
+    return {
+        flashvars: player.getFlashvars(),
+        isMuted: player.getPlayerElementMuted(),
+        isPlaying: player.isPlaying(),
+        isStopped: player.isStopped(),
+        duration: player.getDuration(),
+        isAudio: player.isAudio(),
+        canAutoPlay: player.canAutoPlay(),
+        useNativePlayerControls: player.useNativePlayerControls(),
+        isDVR: player.isDVR(),
+        isPersistentNativePlayer: player.isPersistentNativePlayer(),
+        isOverlayControls: player.isOverlayControls(),
+        isMobileSkin: player.isMobileSkin(),
+        volume: player.getPlayerElementVolume(),
+        isLive: player.isLive(),
+        is360: player.is360(),
+        isDrmRequired: player.isDrmRequired(),
+        isLiveOffSynch: player.isLiveOffSynch(),
+        currentBitrate: player.getCurrentBitrate(),
+        dimensions: {
+            width: player.getWidth(),
+            height: player.getHeight()
+        }
+    };`;
+
 class KalturaPlayer {
     /**
      * @param webDriver {!ThenableWebDriver} A WebDriver instance.
@@ -106,31 +136,7 @@ class KalturaPlayer {
     }
 
     async _getDataFromEmbedPlayer() {
-        const className = '.mwEmbedPlayer';
-        return this._webDriver.executeScript(`return {
-            flashvars: document.querySelector('${className}').getFlashvars(),
-            isMuted: document.querySelector('${className}').getPlayerElementMuted(),
-            isPlaying: document.querySelector('${className}').isPlaying(),
-            isStopped: document.querySelector('${className}').isStopped(),
-            duration: document.querySelector('${className}').getDuration(),
-            isAudio: document.querySelector('${className}').isAudio(),
-            canAutoPlay: document.querySelector('${className}').canAutoPlay(),
-            useNativePlayerControls: document.querySelector('${className}').useNativePlayerControls(),
-            isDVR: document.querySelector('${className}').isDVR(),
-            isPersistentNativePlayer: document.querySelector('${className}').isPersistentNativePlayer(),
-            isOverlayControls: document.querySelector('${className}').isOverlayControls(),
-            isMobileSkin: document.querySelector('${className}').isMobileSkin(),
-            volume: document.querySelector('${className}').getPlayerElementVolume(),
-            isLive: document.querySelector('${className}').isLive(),
-            is360: document.querySelector('${className}').is360(),
-            isDrmRequired: document.querySelector('${className}').isDrmRequired(),
-            isLiveOffSynch: document.querySelector('${className}').isLiveOffSynch(),
-            currentBitrate: document.querySelector('${className}').getCurrentBitrate(),
-            dimensions: {
-                width: document.querySelector('${className}').getWidth(),
-                height: document.querySelector('${className}').getHeight()            
-            }
-        };`);
+        return this._webDriver.executeScript(getDataFromEmbedPlayer);
     }
 }
 
