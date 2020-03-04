@@ -4,7 +4,7 @@
   "description": "Test prototype for kaltura plugins",
   "private": true,
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha tests/KalturaPlayerTest.js --timeout 15000"
+    "test": "node node_modules/mocha/bin/mocha tests/general-player-behavior.test.js --timeout 15000"
   },
   "keywords": [
     "selenium",
